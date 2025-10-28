@@ -1,33 +1,25 @@
+# This example requires the 'members' privileged intent to function.
+
 import discord
 
-# ayricaliklar (intents) değişkeni botun ayrıcalıklarını depolayacak
+
+class MyClient(discord.Client):
+    # Suppress error on the User attribute being None since it fills up later
+    user: discord.ClientUser
+
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
+
+    async def on_member_join(self, member):
+        guild = member.guild
+        if guild.system_channel is not None:
+            to_send = f'Welcome {member.mention} to {guild.name}!'
+            await guild.system_channel.send(to_send)
+
+
 intents = discord.Intents.default()
-# Mesajları okuma ayrıcalığını etkinleştirelim
-intents.message_content = True
-# client (istemci) değişkeniyle bir bot oluşturalım ve ayrıcalıkları ona aktaralım
-client = discord.Client(intents=intents)
+intents.members = True
 
-@client.event
-async def on_ready():
-    print(f'{client.user} olarak giriş yaptık.')
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.content.startswith('$merhaba'):
-        await message.channel.send("Sen kimsın,nerden geldin?")
-    elif message.content.startswith('$sakin ol sana bir şey sorcam'):
-        await message.channel.send("hee tamam sor")
-    elif message.content.startswith('$bana sınav tarihlerini verebilir misin?'):
-        await message.channel.send("hmm,hayır e okul a baksana")
-    elif message.content.startswith('$çok kaba bir botsun'):
-        await message.channel.send("zaten ismim öyle.")
-    elif message.content.startswith('$ben gidiyorum'):
-        await message.channel.send("tamam yürü başka bir bota git.")
-    elif message.content.startswith('$yee hu çıktım'):
-        await message.channel.send("hmm sanırım çıkmdın çıksana yav")
-    else:
-        await message.channel.send(message.content)
-
-client.run("BOTUNUZUN TOKEN BURADA OLMALIDIR!")
+client = MyClient(intents=intents)
+client.run('token')
